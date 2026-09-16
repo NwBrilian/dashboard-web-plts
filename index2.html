@@ -397,50 +397,39 @@
         </div>
     </div>
 
-    <script>
-        // Threshold PLTS 200Wp
-        const reqBeban1 = 30;
-        const reqBeban2 = 80;
-        const reqBeban3 = 150;
+<script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
 
-        // Variabel Global
-        let currentPower = 0;
-        let isAutoMode = true;
-        let relayState = { 1: 'MATI', 2: 'MATI', 3: 'MATI' };
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyATgSfiGlFksmsVmC7PcVKN01rygXhJYfc",
+        authDomain: "project-plts-7317c.firebaseapp.com",
+        databaseURL: "https://project-plts-7317c-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "project-plts-7317c",
+        storageBucket: "project-plts-7317c.firebasestorage.app",
+        messagingSenderId: "257306401246",
+        appId: "1:257306401246:web:b0a139d2c7e1124385e54f"
+    };
 
-        // Fungsi mengubah Mode (Auto / Manual)
-        function changeMode() {
-            const modeSelect = document.getElementById('systemMode').value;
-            isAutoMode = (modeSelect === 'auto');
-            
-            // Aktifkan/Nonaktifkan tombol toggle
-            document.getElementById('toggle-1').disabled = isAutoMode;
-            document.getElementById('toggle-2').disabled = isAutoMode;
-            document.getElementById('toggle-3').disabled = isAutoMode;
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-            // Jika kembali ke auto, langsung jalankan kalkulasi smart load
-            if(isAutoMode) {
-                processSmartLoad(currentPower);
-                logData();
-            }
-        }
+    // Variabel Global
+    const reqBeban1 = 30; const reqBeban2 = 80; const reqBeban3 = 150;
+    let currentPower = 0;
+    let isAutoMode = true;
+    let relayState = { 1: 'MATI', 2: 'MATI', 3: 'MATI' };
 
-        // Fungsi klik Toggle Manual
-        function manualToggle(relayId) {
-            const isChecked = document.getElementById(`toggle-${relayId}`).checked;
-            const status = isChecked ? 'NYALA' : 'MATI';
-            
-            // Simulasikan pengiriman perintah ke ESP32 di sini (contoh: fetch API ke IP ESP32)
-            console.log(`Mengirim perintah ke ESP32: Relay ${relayId} -> ${status}`);
-            
-            // Update UI
-            updateRelayUI(relayId, status);
-            logData(); // Catat perubahan ke tabel
-        }
-
-        // Simulasi pembacaan daya dari sensor
-        function simulateDataOnly() {
-            currentPower = Math.floor(Math.random() * (200 - 10 + 1)) + 10;
+    // Dengarkan perubahan Sensor Daya dari ESP32 (Real-time)
+    const powerRef = ref(db, 'plts/sensor/power');
+    onValue(powerRef, (snapshot) => {
+        const data = snapshot.val();
+        if(data !== null) {
+            currentPower = data;
             document.getElementById('powerMeter').innerText = currentPower;
             
             if(isAutoMode) {
@@ -448,97 +437,106 @@
             }
             logData();
         }
+    });
 
-        // Logika Smart Load Management
-        function processSmartLoad(power) {
-            let b1 = 'MATI', b2 = 'MATI', b3 = 'MATI';
-
-            if (power >= reqBeban3) {
-                b1 = 'NYALA'; b2 = 'NYALA'; b3 = 'NYALA';
-            } else if (power >= reqBeban2) {
-                b1 = 'NYALA'; b2 = 'NYALA';
-            } else if (power >= reqBeban1) {
-                b1 = 'NYALA';
-            }
-
-            updateRelayUI(1, b1);
-            updateRelayUI(2, b2);
-            updateRelayUI(3, b3);
-        }
-
-        // Update Tampilan Relay
-        function updateRelayUI(id, status) {
-            relayState[id] = status;
-            const card = document.getElementById('card-beban' + id);
-            const text = document.getElementById('text-beban' + id);
-            const toggle = document.getElementById('toggle-' + id);
-            
-            text.innerText = status;
-            
-            if (status === 'NYALA') {
-                card.classList.remove('load-off');
-                card.classList.add('load-on');
-                text.style.color = 'var(--primary-color)';
-                toggle.checked = true;
-            } else {
-                card.classList.remove('load-on');
-                card.classList.add('load-off');
-                text.style.color = 'var(--danger-color)';
-                toggle.checked = false;
-            }
-        }
-
-        // Fungsi Catat Tabel
-        function logData() {
-            const tbody = document.getElementById('tableBody');
-            const tr = document.createElement('tr');
-            
-            const now = new Date();
-            const timeString = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
-            const modeText = isAutoMode ? 'AUTO' : 'MANUAL';
-
-            tr.innerHTML = `
-                <td>${timeString}</td>
-                <td><strong>${modeText}</strong></td>
-                <td style="color:var(--secondary-color); font-weight:bold;">${currentPower} W</td>
-                <td>${relayState[1]}</td>
-                <td>${relayState[2]}</td>
-                <td>${relayState[3]}</td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
-        }
-
-        // Export CSV
-        function exportTableToCSV(filename) {
-            const table = document.getElementById("dataTable");
-            let csv = [];
-            const rows = table.querySelectorAll("tr");
-            
-            for (let i = 0; i < rows.length; i++) {
-                let row = [], cols = rows[i].querySelectorAll("td, th");
-                for (let j = 0; j < cols.length; j++) {
-                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/,/g, "");
-                    row.push(data);
-                }
-                csv.push(row.join(","));
-            }
-
-            let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
-            let downloadLink = document.createElement("a");
-            downloadLink.download = filename;
-            downloadLink.href = window.URL.createObjectURL(csvFile);
-            downloadLink.style.display = "none";
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
-            document.body.removeChild(downloadLink);
-        }
-
-        // Jalankan saat pertama kali dibuka
-        simulateDataOnly();
+    // Ekspos fungsi ke Window agar bisa dipanggil oleh onClick HTML
+    window.changeMode = function() {
+        const modeSelect = document.getElementById('systemMode').value;
+        isAutoMode = (modeSelect === 'auto');
         
-        // Timer otomatis tiap 10 Menit (600000 ms)
-        setInterval(simulateDataOnly, 600000); 
+        document.getElementById('toggle-1').disabled = isAutoMode;
+        document.getElementById('toggle-2').disabled = isAutoMode;
+        document.getElementById('toggle-3').disabled = isAutoMode;
 
-    </script>
+        // Kirim status mode ke Firebase untuk dibaca ESP32
+        set(ref(db, 'plts/control/mode'), modeSelect);
+
+        if(isAutoMode) {
+            processSmartLoad(currentPower);
+            logData();
+        }
+    };
+
+    window.manualToggle = function(relayId) {
+        const isChecked = document.getElementById(`toggle-${relayId}`).checked;
+        const status = isChecked ? 'NYALA' : 'MATI';
+        
+        // Kirim perintah ke Firebase
+        set(ref(db, 'plts/control/relay' + relayId), status);
+        
+        updateRelayUI(relayId, status);
+        logData(); 
+    };
+
+    function processSmartLoad(power) {
+        let b1 = 'MATI', b2 = 'MATI', b3 = 'MATI';
+
+        if (power >= reqBeban3) { b1 = 'NYALA'; b2 = 'NYALA'; b3 = 'NYALA'; }
+        else if (power >= reqBeban2) { b1 = 'NYALA'; b2 = 'NYALA'; }
+        else if (power >= reqBeban1) { b1 = 'NYALA'; }
+
+        updateRelayUI(1, b1);
+        updateRelayUI(2, b2);
+        updateRelayUI(3, b3);
+    }
+
+    function updateRelayUI(id, status) {
+        relayState[id] = status;
+        const card = document.getElementById('card-beban' + id);
+        const text = document.getElementById('text-beban' + id);
+        const toggle = document.getElementById('toggle-' + id);
+        
+        text.innerText = status;
+        
+        if (status === 'NYALA') {
+            card.classList.remove('load-off'); card.classList.add('load-on');
+            text.style.color = 'var(--primary-color)'; toggle.checked = true;
+        } else {
+            card.classList.remove('load-on'); card.classList.add('load-off');
+            text.style.color = 'var(--danger-color)'; toggle.checked = false;
+        }
+    }
+
+    window.exportTableToCSV = function(filename) {
+        // (Kode fungsi export CSV tetap sama seperti sebelumnya)
+        const table = document.getElementById("dataTable");
+        let csv = [];
+        const rows = table.querySelectorAll("tr");
+        for (let i = 0; i < rows.length; i++) {
+            let row = [], cols = rows[i].querySelectorAll("td, th");
+            for (let j = 0; j < cols.length; j++) {
+                let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, "").replace(/,/g, "");
+                row.push(data);
+            }
+            csv.push(row.join(","));
+        }
+        let csvFile = new Blob([csv.join("\n")], {type: "text/csv"});
+        let downloadLink = document.createElement("a");
+        downloadLink.download = filename;
+        downloadLink.href = window.URL.createObjectURL(csvFile);
+        downloadLink.style.display = "none";
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    };
+
+    function logData() {
+        const tbody = document.getElementById('tableBody');
+        const tr = document.createElement('tr');
+        const now = new Date();
+        const timeString = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
+        const modeText = isAutoMode ? 'AUTO' : 'MANUAL';
+
+        tr.innerHTML = `
+            <td>${timeString}</td>
+            <td><strong>${modeText}</strong></td>
+            <td style="color:var(--secondary-color); font-weight:bold;">${currentPower} W</td>
+            <td>${relayState[1]}</td>
+            <td>${relayState[2]}</td>
+            <td>${relayState[3]}</td>
+        `;
+        tbody.insertBefore(tr, tbody.firstChild);
+    }
+</script>
 </body>
 </html>
