@@ -3,282 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard PLTS 200Wp - Smart Load Management</title>
+    <title>Dashboard Smart Load Management - Battery Based</title>
     <style>
-        /* CSS Murni - Tema Green Energy (Clean UI) */
+        /* CSS Murni - Tema Green Energy & Industrial */
         :root {
             --primary-color: #10b981; 
-            --secondary-color: #059669; 
+            --secondary-color: #059669;
+            --warning-color: #f59e0b; 
+            --danger-color: #ef4444; 
             --bg-color: #f3f4f6; 
             --card-bg: #ffffff; 
             --text-main: #1f2937; 
             --text-muted: #6b7280; 
-            --danger-color: #ef4444; 
             --relay-bg: #1e293b; 
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 20px; }
+        .container { max-width: 1300px; margin: 0 auto; }
 
         /* Header Styling */
         header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            border-top: 5px solid var(--primary-color);
+            text-align: center; margin-bottom: 20px; padding: 20px; background: var(--card-bg);
+            border-radius: 12px; box-shadow: var(--shadow); border-top: 5px solid var(--primary-color);
         }
-
-        header h1 {
-            color: var(--secondary-color);
-            font-size: 1.8rem;
-            margin-bottom: 8px;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-
-        /* Grid Layout */
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Card Styling */
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            position: relative;
-        }
-
-        .card h2 {
-            font-size: 1.2rem;
-            color: var(--text-muted);
-            margin-bottom: 15px;
-        }
+        header h1 { color: var(--secondary-color); font-size: 1.8rem; margin-bottom: 8px; }
+        header p { color: var(--text-muted); font-size: 1rem; }
 
         /* Mode Selector */
         .mode-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: #f1f5f9;
-            padding: 8px 12px;
-            border-radius: 8px;
-            border: 1px solid #cbd5e1;
-            font-size: 0.9rem;
-            font-weight: bold;
+            display: flex; justify-content: center; align-items: center; margin-bottom: 20px;
+            background: #e2e8f0; padding: 10px 20px; border-radius: 8px; font-weight: bold; width: fit-content; margin: 0 auto 25px auto;
         }
-        
         .mode-container select {
-            border: none;
-            background: transparent;
-            font-weight: bold;
-            color: var(--primary-color);
-            cursor: pointer;
-            outline: none;
+            border: none; background: transparent; font-weight: bold; color: var(--secondary-color); cursor: pointer; outline: none; margin-left: 10px; font-size: 1rem;
         }
 
-        /* Panel Monitor Daya */
-        .power-value {
-            font-size: 4rem;
-            font-weight: bold;
-            color: var(--primary-color);
-            margin: 10px 0;
-        }
-
-        .power-unit {
-            font-size: 1.5rem;
-            color: var(--text-muted);
-        }
+        /* Top Panels (Battery & AC Data) */
+        .top-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        @media (max-width: 768px) { .top-panels { grid-template-columns: 1fr; } }
         
-        .btn-refresh {
-            background-color: #3b82f6; 
-            margin-top: 15px;
-            width: fit-content;
-            align-self: center;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
+        .card {
+            background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); text-align: center;
         }
-        .btn-refresh:hover { background-color: #2563eb; }
+        .card h2 { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 15px; }
 
-        /* Indikator Beban */
-        .loads-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
+        /* Battery UI */
+        .battery-val { font-size: 4.5rem; font-weight: bold; color: var(--primary-color); margin: 5px 0; }
+        .battery-status { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: bold; margin-top: 10px;}
+        .status-charging { background-color: #ecfdf5; color: var(--secondary-color); border: 1px solid var(--primary-color); }
+        .status-discharging { background-color: #fffbeb; color: var(--warning-color); border: 1px solid var(--warning-color); }
 
-        @media (max-width: 600px) {
-            .loads-container {
-                grid-template-columns: 1fr;
-            }
-        }
+        /* AC Parameters UI */
+        .ac-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; }
+        .ac-item { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .ac-item span { display: block; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 5px; }
+        .ac-item strong { font-size: 1.5rem; color: var(--text-main); }
 
-        .load-item {
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #e5e7eb;
-            transition: all 0.3s ease;
-        }
+        /* Clusters Grid */
+        .cluster-section { margin-bottom: 30px; }
+        .cluster-section > h2 { margin-bottom: 15px; color: var(--text-main); padding-left: 5px; border-left: 4px solid var(--primary-color); }
+        .clusters-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        @media (max-width: 992px) { .clusters-container { grid-template-columns: 1fr; } }
 
-        .load-item h3 {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
-        }
-
-        /* Desain Modul Relay Fisik */
+        /* Relay Card */
+        .load-item { padding: 15px; border-radius: 10px; border: 2px solid #e5e7eb; transition: all 0.3s ease; display: flex; flex-direction: column; justify-content: space-between; }
+        .load-item h3 { font-size: 1.1rem; margin-bottom: 2px; }
         .relay-module {
-            background-color: var(--relay-bg);
-            border-radius: 6px;
-            padding: 12px;
-            margin: 15px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #334155;
+            background-color: var(--relay-bg); border-radius: 6px; padding: 8px 12px; margin: 10px 0;
+            display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155;
         }
+        .relay-label { color: #94a3b8; font-size: 0.75rem; font-family: monospace; }
+        .relay-led { width: 12px; height: 12px; border-radius: 50%; background-color: var(--danger-color); box-shadow: 0 0 5px var(--danger-color); }
 
-        .relay-label {
-            color: #94a3b8;
-            font-size: 0.8rem;
-            font-family: monospace;
-            letter-spacing: 1px;
-        }
-
-        .relay-led {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background-color: var(--danger-color);
-            box-shadow: 0 0 5px var(--danger-color);
-            transition: all 0.3s ease;
-        }
-
-        /* Toggle Switch CSS */
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-            margin-top: 10px;
-        }
-        .switch input { 
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .4s;
-            border-radius: 24px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
+        /* Toggle Switch */
+        .switch { position: relative; display: inline-block; width: 44px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 22px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary-color); }
-        input:checked + .slider:before { transform: translateX(26px); }
+        input:checked + .slider:before { transform: translateX(22px); }
         input:disabled + .slider { opacity: 0.5; cursor: not-allowed; }
 
-        /* Status Colors */
+        /* States */
         .load-on { border-color: var(--primary-color); background-color: #ecfdf5; }
-        .load-on .relay-led { 
-            background-color: var(--primary-color); 
-            box-shadow: 0 0 10px var(--primary-color);
-        }
+        .load-on .relay-led { background-color: var(--primary-color); box-shadow: 0 0 10px var(--primary-color); }
         .load-off { border-color: var(--danger-color); background-color: #fef2f2; }
 
-        /* Tabel & Tombol Export */
-        .table-section {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: var(--shadow);
-        }
-
-        .table-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .btn-export {
-            background-color: var(--secondary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        .btn-export:hover { background-color: var(--primary-color); }
-
-        .table-container {
-            overflow-x: auto;
-            max-height: 400px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-        }
-
-        th, td { padding: 12px 15px; border-bottom: 1px solid #e5e7eb; }
+        /* Table */
+        .table-section { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: var(--shadow); }
+        .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .btn-export { background-color: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .table-container { overflow-x: auto; max-height: 400px; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; min-width: 1000px; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid #e5e7eb; }
         th { background-color: #f9fafb; color: var(--text-muted); position: sticky; top: 0; }
-        tbody tr:hover { background-color: #f3f4f6; }
+        .th-r { text-align: center; }
+        .td-r { text-align: center; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -286,96 +108,173 @@
     <div class="container">
         <!-- Header -->
         <header>
-            <h1>Dashboard Smart Load Management PLTS 200Wp</h1>
-            <p>Sistem Pemantauan dan Kendali Beban Berbasis IoT</p>
+            <h1>Dashboard Smart Load Management</h1>
+            <p>Sistem Pemantauan Kapasitas Baterai, Parameter Inverter AC, dan Load Shedding Berbasis IoT</p>
         </header>
 
-        <!-- Monitoring Section -->
-        <div class="dashboard-grid">
-            <!-- Daya Real-time -->
+        <!-- Mode Selector -->
+        <div class="mode-container">
+            Mode Kendali: 
+            <select id="systemMode" onchange="changeMode()">
+                <option value="auto">OTOMATIS (Smart Battery Load Shedding)</option>
+                <option value="manual">MANUAL (Web Control)</option>
+            </select>
+        </div>
+
+        <!-- Top Panels -->
+        <div class="top-panels">
+            <!-- Battery Card -->
             <div class="card">
-                <h2>Daya Diterima Saat Ini</h2>
-                <div class="power-value" id="powerMeter">0</div>
-                <div class="power-unit">Watt</div>
-                <p style="margin-top:5px; font-size:0.85rem; color:#6b7280;">Kapasitas Panel: 200Wp (Direct to Load)</p>
-                <button class="btn-refresh" onclick="simulateDataOnly()">Update Sensor Daya</button>
+                <h2>Kapasitas Baterai PLTS (SoC)</h2>
+                <div class="battery-val"><span id="batteryMeter">0</span>%</div>
+                <div id="chargeStatus" class="battery-status status-charging">☀️ Sedang Mengisi Daya</div>
+                <br>
+                <button onclick="simulateDataOnly()" style="margin-top:15px; padding:8px 15px; cursor:pointer;">Simulasi Sensor (Test)</button>
             </div>
 
-            <!-- Status Beban & Relay -->
-            <div class="card" style="justify-content: flex-start;">
-                
-                <div class="mode-container">
-                    Mode: 
-                    <select id="systemMode" onchange="changeMode()">
-                        <option value="auto">OTOMATIS (Smart Load)</option>
-                        <option value="manual">MANUAL (Web Control)</option>
-                    </select>
+            <!-- AC Parameters Card -->
+            <div class="card">
+                <h2>Parameter Listrik AC (Inverter Output)</h2>
+                <div class="ac-grid">
+                    <div class="ac-item">
+                        <span>Tegangan (V)</span>
+                        <strong id="acVolt">0</strong> V
+                    </div>
+                    <div class="ac-item">
+                        <span>Arus (A)</span>
+                        <strong id="acCurr">0.00</strong> A
+                    </div>
+                    <div class="ac-item">
+                        <span>Daya Aktif (W)</span>
+                        <strong id="acPower">0</strong> W
+                    </div>
                 </div>
+            </div>
+        </div>
 
-                <h2 style="text-align: left; margin-top: 10px;">Kendali & Status Relay</h2>
+        <!-- Relay Clusters -->
+        <div class="cluster-section">
+            <div class="clusters-container">
                 
-                <div class="loads-container">
+                <!-- Cluster 1 -->
+                <div class="card">
+                    <h2>Cluster 1 (Prioritas Tertinggi)</h2>
                     
-                    <!-- Beban 1 -->
-                    <div class="load-item load-off" id="card-beban1">
-                        <h3>Beban 1</h3>
-                        <small style="color:var(--text-muted);">Prioritas Utama</small>
-                        <div class="relay-module">
-                            <span class="relay-label">RELAY CH-1</span>
-                            <div class="relay-led"></div>
+                    <div class="load-item load-off" id="card-r1">
+                        <div>
+                            <h3>R1 - Lampu Pijar</h3>
+                            <small style="color:var(--text-muted);">Status: Selalu Nyala (Kritikal)</small>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span id="text-beban1" style="font-weight:bold; color:var(--danger-color);">MATI</span>
-                            <label class="switch">
-                                <input type="checkbox" id="toggle-1" onchange="manualToggle(1)" disabled>
-                                <span class="slider"></span>
-                            </label>
+                        <div class="relay-module"><span class="relay-label">CH-1</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r1" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-1" onchange="manualToggle(1)" disabled><span class="slider"></span></label>
                         </div>
                     </div>
 
-                    <!-- Beban 2 -->
-                    <div class="load-item load-off" id="card-beban2">
-                        <h3>Beban 2</h3>
-                        <small style="color:var(--text-muted);">Prioritas Menengah</small>
-                        <div class="relay-module">
-                            <span class="relay-label">RELAY CH-2</span>
-                            <div class="relay-led"></div>
+                    <div class="load-item load-off" id="card-r2" style="margin-top:10px;">
+                        <div>
+                            <h3>R2 - Lampu LED</h3>
+                            <small style="color:var(--text-muted);">Mati jika Baterai &le; 10%</small>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span id="text-beban2" style="font-weight:bold; color:var(--danger-color);">MATI</span>
-                            <label class="switch">
-                                <input type="checkbox" id="toggle-2" onchange="manualToggle(2)" disabled>
-                                <span class="slider"></span>
-                            </label>
+                        <div class="relay-module"><span class="relay-label">CH-2</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r2" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-2" onchange="manualToggle(2)" disabled><span class="slider"></span></label>
                         </div>
                     </div>
 
-                    <!-- Beban 3 -->
-                    <div class="load-item load-off" id="card-beban3">
-                        <h3>Beban 3</h3>
-                        <small style="color:var(--text-muted);">Prioritas Rendah</small>
-                        <div class="relay-module">
-                            <span class="relay-label">RELAY CH-3</span>
-                            <div class="relay-led"></div>
+                    <div class="load-item load-off" id="card-r3" style="margin-top:10px;">
+                        <div>
+                            <h3>R3 - Stopkontak</h3>
+                            <small style="color:var(--text-muted);">Mati jika Baterai &le; 20%</small>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
-                            <span id="text-beban3" style="font-weight:bold; color:var(--danger-color);">MATI</span>
-                            <label class="switch">
-                                <input type="checkbox" id="toggle-3" onchange="manualToggle(3)" disabled>
-                                <span class="slider"></span>
-                            </label>
+                        <div class="relay-module"><span class="relay-label">CH-3</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r3" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-3" onchange="manualToggle(3)" disabled><span class="slider"></span></label>
                         </div>
                     </div>
-
                 </div>
+
+                <!-- Cluster 2 -->
+                <div class="card">
+                    <h2>Cluster 2 (Prioritas Menengah)</h2>
+                    
+                    <div class="load-item load-off" id="card-r4">
+                        <div>
+                            <h3>R4 - Lampu LED</h3>
+                            <small style="color:var(--text-muted);">Mati bersama Cluster 2 (&le; 30%)</small>
+                        </div>
+                        <div class="relay-module"><span class="relay-label">CH-4</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r4" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-4" onchange="manualToggle(4)" disabled><span class="slider"></span></label>
+                        </div>
+                    </div>
+
+                    <div class="load-item load-off" id="card-r5" style="margin-top:10px;">
+                        <div>
+                            <h3>R5 - Lampu Pijar</h3>
+                            <small style="color:var(--text-muted);">Mati jika Baterai &le; 40%</small>
+                        </div>
+                        <div class="relay-module"><span class="relay-label">CH-5</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r5" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-5" onchange="manualToggle(5)" disabled><span class="slider"></span></label>
+                        </div>
+                    </div>
+
+                    <div class="load-item load-off" id="card-r6" style="margin-top:10px;">
+                        <div>
+                            <h3>R6 - Stopkontak</h3>
+                            <small style="color:var(--text-muted);">Mati jika Baterai &le; 50%</small>
+                        </div>
+                        <div class="relay-module"><span class="relay-label">CH-6</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r6" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-6" onchange="manualToggle(6)" disabled><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cluster 3 -->
+                <div class="card">
+                    <h2>Cluster 3 (Prioritas Rendah)</h2>
+                    
+                    <div class="load-item load-off" id="card-r7">
+                        <div>
+                            <h3>R7 - Lampu LED</h3>
+                            <small style="color:var(--text-muted);">Mati bersama Cluster 3 (&le; 60%)</small>
+                        </div>
+                        <div class="relay-module"><span class="relay-label">CH-7</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r7" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-7" onchange="manualToggle(7)" disabled><span class="slider"></span></label>
+                        </div>
+                    </div>
+
+                    <div class="load-item load-off" id="card-r8" style="margin-top:10px;">
+                        <div>
+                            <h3>R8 - Stopkontak</h3>
+                            <small style="color:var(--text-muted);">Mati jika Baterai &le; 70%</small>
+                        </div>
+                        <div class="relay-module"><span class="relay-label">CH-8</span><div class="relay-led"></div></div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span id="text-r8" style="font-weight:bold;">MATI</span>
+                            <label class="switch"><input type="checkbox" id="toggle-8" onchange="manualToggle(8)" disabled><span class="slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </div>
 
         <!-- Tabel Log Data -->
         <div class="table-section">
             <div class="table-header">
-                <h2>Riwayat Sistem (Update tiap 10 Menit)</h2>
-                <button class="btn-export" onclick="exportTableToCSV('log_data_plts_200wp.csv')">Export to Excel (CSV)</button>
+                <h2>Riwayat Sistem Kelistrikan</h2>
+                <button class="btn-export" onclick="exportTableToCSV('log_plts_baterai.csv')">Export Excel</button>
             </div>
             <div class="table-container">
                 <table id="dataTable">
@@ -383,27 +282,26 @@
                         <tr>
                             <th>Waktu (Timestamp)</th>
                             <th>Mode</th>
-                            <th>Daya Masuk</th>
-                            <th>Relay 1</th>
-                            <th>Relay 2</th>
-                            <th>Relay 3</th>
+                            <th>Baterai</th>
+                            <th>Status Pengisian</th>
+                            <th>Daya AC (W)</th>
+                            <th class="th-r">R1</th><th class="th-r">R2</th><th class="th-r">R3</th>
+                            <th class="th-r">R4</th><th class="th-r">R5</th><th class="th-r">R6</th>
+                            <th class="th-r">R7</th><th class="th-r">R8</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody">
-                        <!-- Data log masuk ke sini -->
-                    </tbody>
+                    <tbody id="tableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
 <script type="module">
-    // Import the functions you need from the SDKs you need
+    // Import yang benar untuk Database Firebase (ditambahkan ref, set, onValue, getDatabase)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
+    import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
-    // Your web app's Firebase configuration
+    // Konfigurasi Firebase Anda
     const firebaseConfig = {
         apiKey: "AIzaSyATgSfiGlFksmsVmC7PcVKN01rygXhJYfc",
         authDomain: "project-plts-7317c.firebaseapp.com",
@@ -414,80 +312,103 @@
         appId: "1:257306401246:web:b0a139d2c7e1124385e54f"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Variabel Global
-    const reqBeban1 = 30; const reqBeban2 = 80; const reqBeban3 = 150;
-    let currentPower = 0;
+    // Variabel Sensor Global
+    let batteryLvl = 0;
+    let isCharging = false;
+    let voltAC = 0; let currAC = 0; let pwrAC = 0;
+    
     let isAutoMode = true;
-    let relayState = { 1: 'MATI', 2: 'MATI', 3: 'MATI' };
+    let relayState = {1:'MATI', 2:'MATI', 3:'MATI', 4:'MATI', 5:'MATI', 6:'MATI', 7:'MATI', 8:'MATI'};
 
-    // Dengarkan perubahan Sensor Daya dari ESP32 (Real-time)
-    const powerRef = ref(db, 'plts/sensor/power');
-    onValue(powerRef, (snapshot) => {
-        const data = snapshot.val();
-        if(data !== null) {
-            currentPower = data;
-            document.getElementById('powerMeter').innerText = currentPower;
-            
-            if(isAutoMode) {
-                processSmartLoad(currentPower);
-            }
+    // Listener Realtime Firebase untuk Baterai
+    onValue(ref(db, 'plts/sensor/battery'), (snapshot) => {
+        if(snapshot.val() !== null) {
+            batteryLvl = snapshot.val();
+            document.getElementById('batteryMeter').innerText = batteryLvl;
+            if(isAutoMode) processSmartLoad(batteryLvl);
             logData();
         }
     });
 
-    // Ekspos fungsi ke Window agar bisa dipanggil oleh onClick HTML
-    window.changeMode = function() {
-        const modeSelect = document.getElementById('systemMode').value;
-        isAutoMode = (modeSelect === 'auto');
-        
-        document.getElementById('toggle-1').disabled = isAutoMode;
-        document.getElementById('toggle-2').disabled = isAutoMode;
-        document.getElementById('toggle-3').disabled = isAutoMode;
-
-        // Kirim status mode ke Firebase untuk dibaca ESP32
-        set(ref(db, 'plts/control/mode'), modeSelect);
-
-        if(isAutoMode) {
-            processSmartLoad(currentPower);
-            logData();
+    // Listener Realtime Firebase untuk Status Pengisian (Charging)
+    onValue(ref(db, 'plts/sensor/isCharging'), (snapshot) => {
+        if(snapshot.val() !== null) {
+            isCharging = snapshot.val();
+            updateChargeUI(isCharging);
         }
-    };
+    });
 
-    window.manualToggle = function(relayId) {
-        const isChecked = document.getElementById(`toggle-${relayId}`).checked;
-        const status = isChecked ? 'NYALA' : 'MATI';
-        
-        // Kirim perintah ke Firebase
-        set(ref(db, 'plts/control/relay' + relayId), status);
-        
-        updateRelayUI(relayId, status);
-        logData(); 
-    };
+    // Listener Realtime untuk Parameter AC Inverter
+    onValue(ref(db, 'plts/sensor/ac_voltage'), (snap) => { if(snap.val() !== null) document.getElementById('acVolt').innerText = snap.val(); });
+    onValue(ref(db, 'plts/sensor/ac_current'), (snap) => { if(snap.val() !== null) document.getElementById('acCurr').innerText = snap.val(); });
+    onValue(ref(db, 'plts/sensor/ac_power'), (snap) => { if(snap.val() !== null) { pwrAC = snap.val(); document.getElementById('acPower').innerText = pwrAC; }});
 
-    function processSmartLoad(power) {
-        let b1 = 'MATI', b2 = 'MATI', b3 = 'MATI';
-
-        if (power >= reqBeban3) { b1 = 'NYALA'; b2 = 'NYALA'; b3 = 'NYALA'; }
-        else if (power >= reqBeban2) { b1 = 'NYALA'; b2 = 'NYALA'; }
-        else if (power >= reqBeban1) { b1 = 'NYALA'; }
-
-        updateRelayUI(1, b1);
-        updateRelayUI(2, b2);
-        updateRelayUI(3, b3);
+    // Fungsi UI Status Baterai
+    function updateChargeUI(chargingStatus) {
+        const ui = document.getElementById('chargeStatus');
+        if(chargingStatus) {
+            ui.className = "battery-status status-charging";
+            ui.innerText = "☀️ Sedang Mengisi Daya (Terpapar Matahari)";
+        } else {
+            ui.className = "battery-status status-discharging";
+            ui.innerText = "⚡ Baterai Digunakan (Tidak Ada Sinar)";
+        }
     }
 
+    // Fungsi Ubah Mode (Auto / Manual)
+    window.changeMode = function() {
+        isAutoMode = (document.getElementById('systemMode').value === 'auto');
+        
+        // Disable/Enable Switch Slider
+        for(let i=1; i<=8; i++) {
+            // Khusus R1 kita biarkan disabled jika mau selalu nyala, tapi untuk manual kita beri akses
+            document.getElementById('toggle-'+i).disabled = isAutoMode; 
+        }
+
+        set(ref(db, 'plts/control/mode'), isAutoMode ? "auto" : "manual");
+        if(isAutoMode) { processSmartLoad(batteryLvl); logData(); }
+    };
+
+    // Fungsi Toggle Manual
+    window.manualToggle = function(id) {
+        const status = document.getElementById(`toggle-${id}`).checked ? 'NYALA' : 'MATI';
+        set(ref(db, 'plts/control/relay' + id), status); // Kirim ke ESP32
+        updateRelayUI(id, status);
+        logData();
+    };
+
+    // Algoritma Smart Load Shedding berdasarkan Persentase Baterai
+    function processSmartLoad(bat) {
+        // Logika bertingkat (Cascading Load Shedding)
+        let r = {};
+        
+        r[1] = 'NYALA'; // Selalu Nyala (Tidak peduli baterai habis)
+        r[2] = (bat > 10) ? 'NYALA' : 'MATI';
+        r[3] = (bat > 20) ? 'NYALA' : 'MATI';
+        
+        r[4] = (bat > 30) ? 'NYALA' : 'MATI'; // Cluster 2 mati di 30%
+        r[5] = (bat > 40) ? 'NYALA' : 'MATI';
+        r[6] = (bat > 50) ? 'NYALA' : 'MATI';
+        
+        r[7] = (bat > 60) ? 'NYALA' : 'MATI'; // Cluster 3 mati di 60%
+        r[8] = (bat > 70) ? 'NYALA' : 'MATI';
+
+        for(let i=1; i<=8; i++) {
+            updateRelayUI(i, r[i]);
+        }
+    }
+
+    // Fungsi Update Tampilan Kartu Relay
     function updateRelayUI(id, status) {
         relayState[id] = status;
-        const card = document.getElementById('card-beban' + id);
-        const text = document.getElementById('text-beban' + id);
+        const card = document.getElementById('card-r' + id);
+        const text = document.getElementById('text-r' + id);
         const toggle = document.getElementById('toggle-' + id);
         
         text.innerText = status;
-        
         if (status === 'NYALA') {
             card.classList.remove('load-off'); card.classList.add('load-on');
             text.style.color = 'var(--primary-color)'; toggle.checked = true;
@@ -497,8 +418,46 @@
         }
     }
 
+    // Simulasi untuk keperluan Test UI Web (Karena hardware belum menyala)
+    window.simulateDataOnly = function() {
+        batteryLvl = Math.floor(Math.random() * (100 - 5 + 1)) + 5; // Random Baterai 5% - 100%
+        isCharging = Math.random() > 0.5; // Random true/false
+        
+        voltAC = 220 + (Math.random() * 5 - 2.5); // Tegangan stabil sekitar 220V
+        currAC = (Math.random() * 2).toFixed(2); // Arus 0 - 2 Ampere
+        pwrAC = Math.round(voltAC * currAC); // Daya = V x I
+
+        document.getElementById('batteryMeter').innerText = batteryLvl;
+        document.getElementById('acVolt').innerText = voltAC.toFixed(1);
+        document.getElementById('acCurr').innerText = currAC;
+        document.getElementById('acPower').innerText = pwrAC;
+        updateChargeUI(isCharging);
+
+        if(isAutoMode) processSmartLoad(batteryLvl);
+        logData();
+    };
+
+    // Table Logic
+    function logData() {
+        const tbody = document.getElementById('tableBody');
+        const tr = document.createElement('tr');
+        const now = new Date();
+        const tStr = now.toLocaleTimeString('id-ID');
+        const mStr = isAutoMode ? 'AUTO' : 'MANUAL';
+        const chgStr = isCharging ? '☀️ Mengisi' : '⚡ Dipakai';
+
+        tr.innerHTML = `
+            <td>${tStr}</td> <td><strong>${mStr}</strong></td> <td><strong>${batteryLvl}%</strong></td>
+            <td>${chgStr}</td> <td style="color:var(--secondary-color);">${pwrAC}</td>
+            <td class="td-r">${relayState[1]}</td> <td class="td-r">${relayState[2]}</td> <td class="td-r">${relayState[3]}</td>
+            <td class="td-r">${relayState[4]}</td> <td class="td-r">${relayState[5]}</td> <td class="td-r">${relayState[6]}</td>
+            <td class="td-r">${relayState[7]}</td> <td class="td-r">${relayState[8]}</td>
+        `;
+        tbody.insertBefore(tr, tbody.firstChild);
+    }
+
+    // Export CSV
     window.exportTableToCSV = function(filename) {
-        // (Kode fungsi export CSV tetap sama seperti sebelumnya)
         const table = document.getElementById("dataTable");
         let csv = [];
         const rows = table.querySelectorAll("tr");
@@ -520,23 +479,6 @@
         document.body.removeChild(downloadLink);
     };
 
-    function logData() {
-        const tbody = document.getElementById('tableBody');
-        const tr = document.createElement('tr');
-        const now = new Date();
-        const timeString = now.toLocaleDateString('id-ID') + ' ' + now.toLocaleTimeString('id-ID');
-        const modeText = isAutoMode ? 'AUTO' : 'MANUAL';
-
-        tr.innerHTML = `
-            <td>${timeString}</td>
-            <td><strong>${modeText}</strong></td>
-            <td style="color:var(--secondary-color); font-weight:bold;">${currentPower} W</td>
-            <td>${relayState[1]}</td>
-            <td>${relayState[2]}</td>
-            <td>${relayState[3]}</td>
-        `;
-        tbody.insertBefore(tr, tbody.firstChild);
-    }
 </script>
 </body>
 </html>
